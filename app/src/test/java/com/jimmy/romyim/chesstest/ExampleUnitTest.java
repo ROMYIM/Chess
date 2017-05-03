@@ -1,4 +1,4 @@
-package com.jimmy.romyim.chess;
+package com.jimmy.romyim.chesstest;
 
 import org.junit.Test;
 

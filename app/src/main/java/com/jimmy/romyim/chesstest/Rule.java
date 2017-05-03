@@ -1,13 +1,13 @@
-package com.jimmy.romyim.chess;
+package com.jimmy.romyim.chesstest;
 
 /**
  * Created by Administrator on 2017/4/28.
  */
 public class Rule {
     private boolean marshal(int chess, int[] start, int[] end) {
-        if (chess == 1 && (end[1] < 3 || end[1] > 5 || end[0] < 0 || end[1] > 2))
+        if (chess == 1 && (end[1] < 3 || end[1] > 5 || end[0] < 0 || end[0] > 2))
             return false;
-        else if (chess == 8 && (end[1] < 3 || end[1] > 5 || end[0] < 7 || end[1] > 9))
+        else if (chess == 8 && (end[1] < 3 || end[1] > 5 || end[0] < 7 || end[0] > 9))
             return false;
         if (Math.abs(start[0] - end[0]) + Math.abs(start[1] - end[1]) == 1)
             return true;
@@ -21,10 +21,10 @@ public class Rule {
             count++;
             int from = (end[1] > start[1] ? start[1] : end[1]);
             int to = (end[1] < start[1] ? start[1] : end[1]);
-            while (from <= to) {
-                if (chessBoard[end[0]][++from] != 0)
+            while (++from <= --to) {
+                if (chessBoard[end[0]][from] != 0 && from != to)
                     count++;
-                if (chessBoard[end[0]][--to] != 0)
+                if (chessBoard[end[0]][to] != 0)
                     count++;
                 if (count >= 2)
                     break;
@@ -34,10 +34,10 @@ public class Rule {
             count++;
             int from = (end[0] > start[0] ? start[0] : end[0]);
             int to = (end[0] < start[0] ? start[0] : end[0]);
-            while (from <= to) {
-                if (chessBoard[end[++from]][end[1]] != 0)
+            while (++from <= --to) {
+                if (chessBoard[from][end[1]] != 0 && from != to)
                     count++;
-                if (chessBoard[end[--to]][end[1]] != 0)
+                if (chessBoard[to][end[1]] != 0)
                     count++;
                 if (count >= 2)
                     break;
@@ -76,9 +76,9 @@ public class Rule {
     }
 
     private boolean bodygraud(int chess, int[] start, int[] end) {
-        if (chess == 5 && (end[1] < 3 || end[1] > 5 || end[0] < 0 || end[1] > 2))
+        if (chess == 5 && (end[1] < 3 || end[1] > 5 || end[0] < 0 || end[0] > 2))
             return false;
-        else if (chess == 12 && (end[1] < 3 || end[1] > 5 || end[0] < 7 || end[1] > 9))
+        else if (chess == 12 && (end[1] < 3 || end[1] > 5 || end[0] < 7 || end[0] > 9))
             return false;
         if (Math.abs(start[0] - end[0]) == 1 && Math.abs(start[1] - end[1]) == 1)
             return true;
@@ -123,7 +123,7 @@ public class Rule {
 
     public boolean canMove(int chess, int[] start, int[] end, int[][] chessBoard) {
         boolean result = false;
-        if (end[0] < 0 || end[0] > 8 || end[1] >9 || end[1] < 0)
+        if (end[0] < 0 || end[0] > 9 || end[1] > 8 || end[1] < 0)
             return result;
         switch (chess % 7) {
             case 1:
@@ -140,7 +140,7 @@ public class Rule {
                 return this.bodygraud(chess, start, end);
             case 6:
                 return this.chancellor(chess, start, end, chessBoard);
-            case 7:
+            case 0:
                 return this.soldiers(chess, start, end);
         }
         return result;
