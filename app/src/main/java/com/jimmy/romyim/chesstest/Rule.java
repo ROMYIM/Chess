@@ -4,11 +4,19 @@ package com.jimmy.romyim.chesstest;
  * Created by Administrator on 2017/4/28.
  */
 public class Rule {
-    private boolean marshal(int chess, int[] start, int[] end) {
-        if (chess == 1 && (end[1] < 3 || end[1] > 5 || end[0] < 0 || end[0] > 2))
-            return false;
-        else if (chess == 8 && (end[1] < 3 || end[1] > 5 || end[0] < 7 || end[0] > 9))
-            return false;
+    private boolean marshal(int chess, int[] start, int[] end, int[][] chessBoard) {
+        if (chess == 1 ) {
+            if (chessBoard[end[0]][end[1]] == 8 && this.tank(start, end, chessBoard) == 0)
+                return true;
+            else if (end[1] < 3 || end[1] > 5 || end[0] < 0 || end[0] > 2)
+                return false;
+        }
+        else if (chess == 8) {
+            if (chessBoard[end[0]][end[1]] == 1 && this.tank(start, end, chessBoard) == 0)
+                return true;
+            else if (end[1] < 3 || end[1] > 5 || end[0] < 7 || end[0] > 9)
+                return false;
+        }
         if (Math.abs(start[0] - end[0]) + Math.abs(start[1] - end[1]) == 1)
             return true;
         else
@@ -127,7 +135,7 @@ public class Rule {
             return result;
         switch (chess % 7) {
             case 1:
-                return this.marshal(chess, start, end);
+                return this.marshal(chess, start, end, chessBoard);
             case 2:
                 if (this.tank(start, end, chessBoard) == 0)
                     result = true;

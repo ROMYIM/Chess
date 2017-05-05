@@ -1,11 +1,15 @@
 package View;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -22,6 +26,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     private DrawThread thread;//刷帧的线程
     private TimeThread timeThread;
     ChessActivity activity;//声明Activity的引用
+    AlertDialog.Builder winDialog;
+    SurfaceHolder gameViewHolder;
+    Handler myHandle;
+
     Bitmap qiPan;//棋盘
     Bitmap chessBackground;//棋子的背景图片
     Bitmap background;//背景图片
@@ -63,10 +71,29 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     public GameView(Context context, ChessActivity activity) {//构造器
         super(context);
         this.activity = activity;//得到Activity的引用
-        getHolder().addCallback(this);
-        this.thread = new DrawThread(getHolder(), this);//初始化刷帧线程
+        this.gameViewHolder = this.getHolder();
+        this.gameViewHolder.addCallback(this);
+        this.thread = new DrawThread(this);//初始化刷帧线程
         this.timeThread = new TimeThread();
         this.rule = new Rule();
+        this.winDialog = new AlertDialog.Builder(this.activity);
+        this.myHandle = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case 1:
+                        winDialog.setTitle(R.string.winDialog_red);
+                        break;
+                    case 2:
+                        winDialog.setTitle(R.string.winDialog_black);
+                        break;
+                    case 0:
+                        return;
+                }
+                winDialog.create();
+                winDialog.show();
+            }
+        };
         init();//初始化所需资源
     }
 
@@ -118,6 +145,22 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         redNum[8] = BitmapFactory.decodeResource(getResources(), R.drawable.rednumber8);//红色数字8
         redNum[9] = BitmapFactory.decodeResource(getResources(), R.drawable.rednumber9);//红色数字9
 
+
+        this.winDialog.setMessage(R.string.winDialog_message);
+        this.winDialog.setPositiveButton(R.string.winDialog_positiveBtn, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                surfaceDestroyed(gameViewHolder);
+                activity.initGameView();
+            }
+        });
+        this.winDialog.setNegativeButton(R.string.winDialog_negativeBtn, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                surfaceDestroyed(gameViewHolder);
+                activity.finish();
+            }
+        });
         int templength = 0;
         for (int i = 0; i < redTimeLocation.length; i++) {
             if (i == redTimeLocation.length / 2) {
@@ -146,6 +189,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         this.end[0] = row;
         this.end[1] = column;
         if (this.rule.canMove(this.selectedChesspiece, this.start, this.end, this.chessBoard)) {
+            if (this.chessBoard[row][column] == 1) {
+                status = 1;
+                this.myHandle.sendEmptyMessage(status);
+            } else if (this.chessBoard[row][column] == 8) {
+                status = 2;
+                this.myHandle.sendEmptyMessage(status);
+            }
             this.chessBoard[row][column] = this.chessBoard[start[0]][start[1]];
             this.chessBoard[start[0]][start[1]] = 0;
             this.start[0] = this.start[1] = this.end[0] = this.end[1] = -1;
@@ -169,7 +219,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         int minute, seconds;
         minute = timeObj / 60;
         seconds = timeObj % 60;
-        String minStr = "";
+        String minStr;
         String secStr = seconds + "";
         if (minute < 10) {
             minStr = "0" + minute;
@@ -189,20 +239,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         }
     }
 
-    public void success(){//胜利了
-        status = 1;//切换到胜利状态
-    }
+
     /**
      * 该方法是自己定义的并非重写的
 
      */
     @Override
-    public void onDraw(Canvas canvas){//自己写的绘制方法
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
         canvas.drawColor(Color.WHITE);
         canvas.drawBitmap(background, 0, 0, null);//清背景
         canvas.drawBitmap(qiPan, 70, 220, null);//绘制棋盘
         for(int i = 0; i < chessBoard.length; i++){
-            for(int j = 0; j<chessBoard[i].length; j++){//绘制棋子
+            for(int j = 0; j < chessBoard[i].length; j++){//绘制棋子
                 if(chessBoard[i][j] != 0) {
                     canvas.drawBitmap(chessBackground, 63 + j * 102, 220 + i * 105, null);//绘制棋子的背景
                     switch (chessBoard[i][j]) {
@@ -263,9 +312,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             if (this.status == 1) {
-
+//                this.winDialog.create();
+//                this.winDialog.show();
             }else if (this.status == 2) {
-
+//                this.winDialog.create();
+//                this.winDialog.show();
             }else if (this.status == 0) {
                 double x = event.getX();
                 double y = event.getY();
@@ -326,12 +377,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
 
     class DrawThread extends Thread {
         private int span = 200;
-        private SurfaceHolder surfaceHolder;
         private GameView gameView;
         private boolean flag;
 
-        public DrawThread(SurfaceHolder surfaceHolder, GameView gameView) {
-            this.surfaceHolder = surfaceHolder;
+        public DrawThread(GameView gameView) {
             this.gameView = gameView;
         }
 
@@ -346,13 +395,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
             while (this.flag) {
                 c = null;
                 try {
-                    c = this.surfaceHolder.lockCanvas(null);
-                    synchronized (this.surfaceHolder) {
-                        this.gameView.onDraw(c);
+                    c = gameViewHolder.lockCanvas(null);
+                    synchronized (gameViewHolder) {
+                        this.gameView.draw(c);
                     }
                 }finally {
                     if (c != null)
-                        this.surfaceHolder.unlockCanvasAndPost(c);
+                        gameViewHolder.unlockCanvasAndPost(c);
                 }
                 try {
                     Thread.sleep(this.span);

@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">ChessTest</string>
+    <string name="winDialog_red">红方</string>
+    <string name="winDialog_black">黑方</string>
+    <string name="winDialog_message">恭喜，你赢了</string>
+    <string name="winDialog_positiveBtn">再来一盘</string>
+    <string name="winDialog_negativeBtn">退出游戏</string>
+    <string name="checkDialog_name">将军</string>
+    <string name="checkDialog_message">将你一军</string>
+    <string name="checkDialog_positiveBtn">继续</string>
+    <string name="checkDialog_negativeBtn">认输</string>
 </resources>

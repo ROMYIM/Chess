@@ -1,5 +1,8 @@
 package com.jimmy.romyim.chesstest;
 
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
@@ -27,6 +30,7 @@ public class ChessActivity extends AppCompatActivity {
 //            }
 //        }
 //    };
+    @Override
     public void onCreate(Bundle savedInstanceState) {//重写的onCreate
         super.onCreate(savedInstanceState);
         //全屏
