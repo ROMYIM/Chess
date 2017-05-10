@@ -73,7 +73,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
         this.activity = activity;//得到Activity的引用
         this.gameViewHolder = this.getHolder();
         this.gameViewHolder.addCallback(this);
-        this.thread = new DrawThread(this);//初始化刷帧线程
+        this.thread = new DrawThread();//初始化刷帧线程
         this.timeThread = new TimeThread();
         this.rule = new Rule();
         this.winDialog = new AlertDialog.Builder(this.activity);
@@ -161,6 +161,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
                 activity.finish();
             }
         });
+
         int templength = 0;
         for (int i = 0; i < redTimeLocation.length; i++) {
             if (i == redTimeLocation.length / 2) {
@@ -312,11 +313,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             if (this.status == 1) {
-//                this.winDialog.create();
-//                this.winDialog.show();
+
             }else if (this.status == 2) {
-//                this.winDialog.create();
-//                this.winDialog.show();
+
             }else if (this.status == 0) {
                 double x = event.getX();
                 double y = event.getY();
@@ -377,12 +376,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
 
     class DrawThread extends Thread {
         private int span = 200;
-        private GameView gameView;
         private boolean flag;
 
-        public DrawThread(GameView gameView) {
-            this.gameView = gameView;
-        }
 
         public void setFlag(boolean flag) {
             this.flag = flag;
@@ -397,7 +392,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback{
                 try {
                     c = gameViewHolder.lockCanvas(null);
                     synchronized (gameViewHolder) {
-                        this.gameView.draw(c);
+                        draw(c);
                     }
                 }finally {
                     if (c != null)
